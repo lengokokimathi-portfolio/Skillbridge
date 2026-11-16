@@ -11,9 +11,14 @@ const PORT = process.env.PORT || 3000;
 // Note: In production, you should restrict this to your actual frontend domain.
 // For now, we allow null and localhost for development and testing.
 app.use(cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', null],
+    origin: [
+        'http://127.0.0.1:5500', 
+        'http://localhost:5500',
+        'https://lengokokimathi-portfolio.github.io',  // Your GitHub Pages domain
+        null
+    ],
     credentials: true
-})); // <--- FIXED: Added missing closing parenthesis
+}));// <--- FIXED: Added missing closing parenthesis
 app.use(express.json());
 
 // ============================================
