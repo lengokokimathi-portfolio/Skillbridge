@@ -8,27 +8,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // CORS Configuration
+// Note: In production, you should restrict this to your actual frontend domain.
+// For now, we allow null and localhost for development and testing.
 app.use(cors({
     origin: ['http://127.0.0.1:5500', 'http://localhost:5500', null],
     credentials: true
-}));
+});
 app.use(express.json());
 
-// Database Connection
+// ============================================
+// DATABASE CONNECTION - UPDATED FOR AIVEN CLOUD
+// ============================================
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '', 
-    database: 'skillbridge'
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    port: process.env.MYSQL_PORT,
+    ssl: { rejectUnauthorized: false } // REQUIRED for Aiven SSL connection
 });
 
 db.connect(err => {
     if (err) {
-        console.error('❌ CRITICAL: Database connection failed:', err);
-        console.error('Make sure XAMPP (MySQL/MariaDB) is running!');
-        process.exit(1);
+        console.error('❌ CRITICAL: Cloud Database connection failed:', err);
+        console.error('Check your Aiven credentials and Render Environment Variables.');
+        process.exit(1); // Stop the server if DB connection fails
     }
-    console.log('✅ Successfully connected to MySQL database "skillbridge"');
+    console.log('✅ Successfully connected to Aiven MySQL Database "defaultdb"');
 });
 
 // Generate UUID v4
@@ -41,7 +47,7 @@ function generateUUID() {
 }
 
 // ============================================
-// REGISTRATION ENDPOINT - FULLY FIXED
+// REGISTRATION ENDPOINT
 // ============================================
 app.post('/api/register', async (req, res) => {
     console.log('📥 Registration request received for:', req.body.email);
@@ -100,7 +106,6 @@ app.post('/api/register', async (req, res) => {
         const role = accountType && validRoles.includes(accountType) ? accountType : 'seeker';
 
         // 6. Insert the new user into the database
-        // FIXED: Only insert columns that exist and are required
         const [result] = await db.promise().execute(
             `INSERT INTO users (uuid, name, email, phone, password_hash, role, location, country) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -197,13 +202,13 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('==========================================');
-    console.log(`🚀 SERVER STARTED ON http://localhost:${PORT}`);
+    console.log(`🚀 SERVER STARTED ON PORT ${PORT}`);
     console.log('📡 Registration: ENABLED (stores users in MySQL)');
     console.log('📡 Payment: SIMULATION MODE ONLY');
     console.log('🛡️  CORS: Enabled for localhost:5500');
     console.log('==========================================');
     console.log('');
     console.log('✅ Registration is now active and will store users in the database.');
-    console.log('✅ Check phpMyAdmin → skillbridge → users table to verify new users.');
+    console.log('✅ Check Aiven Database "defaultdb" → users table to verify new users.');
     console.log('');
 });
