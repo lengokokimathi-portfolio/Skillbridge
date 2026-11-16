@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
     origin: ['http://127.0.0.1:5500', 'http://localhost:5500', null],
     credentials: true
-});
+})); // <--- FIXED: Added missing closing parenthesis
 app.use(express.json());
 
 // ============================================
@@ -40,7 +40,7 @@ db.connect(err => {
 // Generate UUID v4
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = Math.random() * 16 | 0;
+        const r = Math.random * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
